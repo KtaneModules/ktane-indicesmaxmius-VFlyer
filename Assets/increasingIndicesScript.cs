@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using KModkit;
 
@@ -41,7 +42,7 @@ public class increasingIndicesScript : MonoBehaviour
 	static int moduleIdCounter = 1;
 	int moduleId;
 
-	//
+	//Awaken module.
 	void Awake()
 	{
 		moduleId = moduleIdCounter++;
@@ -124,9 +125,9 @@ public class increasingIndicesScript : MonoBehaviour
 		{
 			if(coefficients[i] != 0)
 			{
-				if(coefficients[i] < -1)
+				if(coefficients[i] < -1 || (i == (coefficients.Length - 1) && coefficients[i] == -1))
 					equationString += coefficients[i];
-				else if(coefficients[i] > 1 || i == (coefficients.Length - 1))
+				else if(coefficients[i] > 1 || (i == (coefficients.Length - 1) && coefficients[i] == 1))
 					equationString += "+" + coefficients[i];
 				else if(i != 0 && coefficients[i] == 1)
 					equationString += "+";
@@ -141,9 +142,6 @@ public class increasingIndicesScript : MonoBehaviour
 					case 4 : equationString += "x" + SuperFour; break;
 					default : break;
 				}
-
-				//if((coefficients.Length == 5 && i == 2) || (coefficients.Length == 4 && i == 1 && !coefficients.Contains(0)))
-					//equationString += "\n";
 			}
 		}
 
@@ -270,5 +268,32 @@ public class increasingIndicesScript : MonoBehaviour
 		}
 		Audio.PlaySoundAtTransform("success", transform);
 		GetComponent<KMBombModule>().HandlePass();
+	}
+
+	
+#pragma warning disable 414
+    private readonly string TwitchHelpMessage = @"Submit roots for x with “!{0} press 1 2 3 -1”.";
+#pragma warning restore 414
+
+	KMSelectable[] ProcessTwitchCommand(String command)
+	{
+		var match = Regex.Match(command,@"^\s*press(\s((-?[1-3])|0|4))+$", RegexOptions.IgnoreCase);
+		List<KMSelectable> buttonsToPress = new List<KMSelectable>();
+
+		if(match.Success)
+		{
+			var pressed  = match.Groups[0].Value.ToLowerInvariant().Trim();
+			String[] parameters = pressed.ToString().Split(' ');
+
+			for(int i = 1; i < parameters.Length; i++)
+			{//i=0 deliberately ignored as this will simply be "press".
+				Debug.Log(parameters[i]);
+				buttonsToPress.Add(numButtons.First(b => b.GetComponentInChildren<TextMesh>().text.Equals(parameters[i].Trim())));
+			}
+
+			return buttonsToPress.ToArray();
+		}
+		
+		return null;
 	}
 }
