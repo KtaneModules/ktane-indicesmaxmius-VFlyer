@@ -289,8 +289,8 @@ public class increasingIndicesScript : MonoBehaviour
 
 		for(int i = 1; i < parameters.Length; i++)
 		{//i=0 deliberately ignored as this will simply be "press".
-			PressNumber(numButtons.First(b => b.GetComponentInChildren<TextMesh>().text.Equals(parameters[i])));
 			yield return null;
+			numButtons.First(b => b.GetComponentInChildren<TextMesh>().text.Equals(parameters[i])).OnInteract();
 		}
 	}
 }
