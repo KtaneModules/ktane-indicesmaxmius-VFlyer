@@ -272,28 +272,25 @@ public class increasingIndicesScript : MonoBehaviour
 
 	
 #pragma warning disable 414
-    private readonly string TwitchHelpMessage = @"Submit roots for x with “!{0} press 1 2 3 -1”.";
+    private readonly string TwitchHelpMessage = @"Submit roots for x with “!{0} press 1 -1”.";
 #pragma warning restore 414
 
-	KMSelectable[] ProcessTwitchCommand(String command)
+	//Process command for Twitch Plays - IEnumerator method used due to the win sequence taking roughly 1 second.
+	IEnumerator ProcessTwitchCommand(String command)
 	{
 		var match = Regex.Match(command,@"^\s*press(\s((-?[1-3])|0|4))+$", RegexOptions.IgnoreCase);
 		List<KMSelectable> buttonsToPress = new List<KMSelectable>();
 
-		if(match.Success)
-		{
-			var pressed  = match.Groups[0].Value.ToLowerInvariant().Trim();
-			String[] parameters = pressed.ToString().Split(' ');
+		if(!match.Success)
+			yield break;
+			
+		var pressed  = match.Groups[0].Value.ToLowerInvariant().Trim();
+		String[] parameters = pressed.ToString().Split(' ');
 
-			for(int i = 1; i < parameters.Length; i++)
-			{//i=0 deliberately ignored as this will simply be "press".
-				Debug.Log(parameters[i]);
-				buttonsToPress.Add(numButtons.First(b => b.GetComponentInChildren<TextMesh>().text.Equals(parameters[i].Trim())));
-			}
-
-			return buttonsToPress.ToArray();
+		for(int i = 1; i < parameters.Length; i++)
+		{//i=0 deliberately ignored as this will simply be "press".
+			PressNumber(numButtons.First(b => b.GetComponentInChildren<TextMesh>().text.Equals(parameters[i])));
+			yield return null;
 		}
-		
-		return null;
 	}
 }
