@@ -10,4 +10,5 @@ Manual (PDF): https://drive.google.com/file/d/1Jz_Oc1Vxyih9swNRAleLrFHUHJ9Gs31A
 ---
 ## Version History
 2020-07-21 - 1.1: Fixed small visual bug and added Twitch Plays support.
+
 2020-07-19 - 1.0: Increasing Indices released! 
