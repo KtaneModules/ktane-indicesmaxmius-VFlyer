@@ -2698,7 +2698,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Audio: {fileID: 114603921655233626}
-  Bomb: {fileID: 0}
   numButtons:
   - {fileID: 114381171185498700}
   - {fileID: 114070533020583554}

@@ -291,6 +291,9 @@ public class increasingIndicesScript : MonoBehaviour
 		{//i=0 deliberately ignored as this will simply be "press".
 			yield return null;
 			numButtons.First(b => b.GetComponentInChildren<TextMesh>().text.Equals(parameters[i])).OnInteract();
+			
+			if(moduleSolved)
+				yield return "solve";
 		}
 	}
 }
