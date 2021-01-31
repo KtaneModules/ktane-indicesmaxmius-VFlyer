@@ -14,7 +14,7 @@ MonoBehaviour:
   id: increasingIndices
   title: Increasing Indices
   author: Burniel & Chestnut
-  description: "Increasing Indices\r v1.1.1\n\"No one uses these equations in real
+  description: "Increasing Indices\r v1.1.3\n\"No one uses these equations in real
     life ...\" - someone who blew up, probably.\n\r\nModuleID: increasingIndices\r\n\r\nManual,
     name, and implementation by Burniel.\nOriginal idea by Chestnut.\n\r\nManual (HTML):
     https://ktane.timwi.de/HTML/Increasing%20Indices.html\nManual (PDF): https://drive.google.com/file/d/1Jz_Oc1Vxyih9swNRAleLrFHUHJ9Gs31A"

@@ -279,21 +279,20 @@ public class increasingIndicesScript : MonoBehaviour
 	IEnumerator ProcessTwitchCommand(String command)
 	{
 		var match = Regex.Match(command,@"^\s*press(\s((-?[1-3])|0|4))+$", RegexOptions.IgnoreCase);
-		List<KMSelectable> buttonsToPress = new List<KMSelectable>();
-
+		
 		if(!match.Success)
 			yield break;
 			
 		var pressed  = match.Groups[0].Value.ToLowerInvariant().Trim();
 		String[] parameters = pressed.ToString().Split(' ');
-
+		KMSelectable[] buttonsToPress = new KMSelectable[parameters.Length-1];
+		
 		for(int i = 1; i < parameters.Length; i++)
-		{//i=0 deliberately ignored as this will simply be "press".
-			yield return null;
-			numButtons.First(b => b.GetComponentInChildren<TextMesh>().text.Equals(parameters[i])).OnInteract();
-			
-			if(moduleSolved)
-				yield return "solve";
+		{
+			buttonsToPress[i-1] = numButtons.First(b => b.GetComponentInChildren<TextMesh>().text.Equals(parameters[i]));
 		}
+
+		yield return null;
+		yield return buttonsToPress;
 	}
 }
