@@ -27,7 +27,7 @@ public class indicesMaximusRewriteScript : MonoBehaviour
 	private bool moduleSolved;
 	List<int> correctRootsPressed;
 	int stagesCompleted;
-	int numerVal, denomVal = 1;
+	int numerVal, denomVal = 1, deltaBtnHeld = 0;
 
 	//Useful unicode constants for writing the equations:
 	private const string SuperTwo = "\u00B2",
@@ -41,6 +41,7 @@ public class indicesMaximusRewriteScript : MonoBehaviour
 	//Logging variables:
 	static int moduleIdCounter = 1;
 	int moduleId;
+	float timeHeld = 0f;
 
 	//Initialize module.
 	void Start()
@@ -53,8 +54,15 @@ public class indicesMaximusRewriteScript : MonoBehaviour
 				mAudio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, leftBtn.transform);
 				leftBtn.AddInteractionPunch();
 				HandleDelta(-1);
+				deltaBtnHeld = -1;
 			}
 			return false;
+		};
+		leftBtn.OnInteractEnded += delegate {
+			deltaBtnHeld = 0;
+		};
+		rightBtn.OnInteractEnded += delegate {
+			deltaBtnHeld = 0;
 		};
 		rightBtn.OnInteract += delegate {
 			if (!moduleSolved && !resetting)
@@ -62,6 +70,7 @@ public class indicesMaximusRewriteScript : MonoBehaviour
 				mAudio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, rightBtn.transform);
 				rightBtn.AddInteractionPunch();
 				HandleDelta(1);
+				deltaBtnHeld = 1;
 			}
 			return false;
 		};
@@ -162,7 +171,7 @@ public class indicesMaximusRewriteScript : MonoBehaviour
 	}
 	string QuickConvertRational(int[] expression)
     {
-		return expression[0] == 1 ? expression[1].ToString() : string.Format("{0}/{1}", expression[1], expression[0]);
+		return expression[0] == 1 ? (expression[1]).ToString() : string.Format("{0}/{1}", expression[1], expression[0]);
 	}
 	int GetGCM(int a, int b)
     {
@@ -187,6 +196,7 @@ public class indicesMaximusRewriteScript : MonoBehaviour
 		else
         {
 			selectedCorrectRationalRoots = new int[4][];
+			retryRationalGuarentee:
             for (var x = 0; x < 4; x++)
             {
 				retryRational:
@@ -204,9 +214,11 @@ public class indicesMaximusRewriteScript : MonoBehaviour
 					goto retryRational;
 				selectedCorrectRationalRoots[x] = nextRoot;
 			}
+			if (selectedCorrectRationalRoots.All(a => a[0] == 1))
+				goto retryRationalGuarentee;
         }
 		QuickLog(string.Format("All distinct roots selected (lowest to highest): {0}",
-			selectedCorrectRationalRoots.OrderBy(a => a[1]).ThenBy(a => a[0]).Select(a => a[0] == 1 ? a[1].ToString() : string.Format("{0}/{1}",a[1],a[0])).Join()));
+			selectedCorrectRationalRoots.OrderBy(a => a[1]).ThenBy(a => a[0]).Select(a => QuickConvertRational(a)).Join()));
 		var repeatCount = Enumerable.Repeat(1, 4).ToArray();
 		for (var x = 0; x < 4; x++)
 		{
@@ -219,8 +231,10 @@ public class indicesMaximusRewriteScript : MonoBehaviour
 		int[] arrayToDisplay = new int[0];
 		for (var x = 0; x < selectedCorrectRationalRoots.Length; x++)
 		{
+			var flippedRoot = selectedCorrectRationalRoots[x].ToArray();
+			flippedRoot[1] *= -1;
 			for (var y = 0; y < repeatCount[x]; y++)
-				arrayToDisplay = PolynomialMultiplication(arrayToDisplay, selectedCorrectRationalRoots[x]);
+				arrayToDisplay = PolynomialMultiplication(arrayToDisplay, flippedRoot);
 		}
 		var equationMade = CreateEquationString(arrayToDisplay);
 		QuickLog(string.Format("Generated Equation: {0}", equationMade));
@@ -372,6 +386,20 @@ public class indicesMaximusRewriteScript : MonoBehaviour
 		mAudio.PlaySoundAtTransform("success", transform);
 		modSelf.HandlePass();
 	}
+	void Update()
+    {
+		if (deltaBtnHeld == 0)
+			timeHeld = 0;
+		else
+        {
+			timeHeld += Time.deltaTime;
+			if (timeHeld > 1f)
+            {
+				timeHeld = 0.75f;
+				HandleDelta(deltaBtnHeld);
+            }
+        }
+    }
 
 
 	IEnumerator TwitchHandleForcedSolve()
@@ -389,9 +417,15 @@ public class indicesMaximusRewriteScript : MonoBehaviour
 					if (numeratorPressed || !firstPressSinceReset)
 						denominatorBtn.OnInteract();
 					if (denomVal < curRoot[0])
+					{
 						rightBtn.OnInteract();
+						rightBtn.OnInteractEnded();
+					}
 					else
+					{
 						leftBtn.OnInteract();
+						leftBtn.OnInteractEnded();
+					}
 					yield return new WaitForSeconds(.1f);
 				}
 				while (numerVal != curRoot[1])
@@ -399,9 +433,15 @@ public class indicesMaximusRewriteScript : MonoBehaviour
 					if (!numeratorPressed || !firstPressSinceReset)
 						numeratorBtn.OnInteract();
 					if (numerVal < curRoot[1])
-						rightBtn.OnInteract();
-					else
-						leftBtn.OnInteract();
+					{
+                        rightBtn.OnInteract();
+                        rightBtn.OnInteractEnded();
+                    }
+                    else
+                    {
+                        leftBtn.OnInteract();
+                        leftBtn.OnInteractEnded();
+                    }
 					yield return new WaitForSeconds(.1f);
 				}
 				(numeratorPressed ? numeratorBtn : denominatorBtn).OnInteract();
@@ -449,9 +489,15 @@ public class indicesMaximusRewriteScript : MonoBehaviour
 					if (numeratorPressed || !firstPressSinceReset)
 						denominatorBtn.OnInteract();
 					if (denomVal < possibleRoot[1])
+					{
 						rightBtn.OnInteract();
+						rightBtn.OnInteractEnded();
+					}
 					else
+					{
 						leftBtn.OnInteract();
+						leftBtn.OnInteractEnded();
+					}
 					yield return new WaitForSeconds(.1f);
 				}
 				while (numerVal != possibleRoot[0])
@@ -459,9 +505,15 @@ public class indicesMaximusRewriteScript : MonoBehaviour
 					if (!numeratorPressed || !firstPressSinceReset)
 						numeratorBtn.OnInteract();
 					if (numerVal < possibleRoot[0])
+					{
 						rightBtn.OnInteract();
+						rightBtn.OnInteractEnded();
+					}
 					else
+					{
 						leftBtn.OnInteract();
+						leftBtn.OnInteractEnded();
+					}
 					yield return new WaitForSeconds(.1f);
 				}
 				(numeratorPressed ? numeratorBtn : denominatorBtn).OnInteract();
