@@ -244,6 +244,8 @@ public class indicesMaximusScript : MonoBehaviour
 
 	IEnumerator TwitchHandleForcedSolve()
 	{
+		while (resetting)
+			yield return true;
 		for (var x = 0; x < isCorrectRoot.Length; x++)
         {
 			if (isCorrectRoot[x] && !pressedRoot[x])
