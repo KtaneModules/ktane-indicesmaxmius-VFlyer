@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-public class indicesMaximusRewriteScript : MonoBehaviour
+public class IndicesMaximusRewriteScript : MonoBehaviour
 {
 	//Audio and bomb info from the ModKit:
 	public KMAudio mAudio;
@@ -96,7 +96,7 @@ public class indicesMaximusRewriteScript : MonoBehaviour
 
 	void QuickLog(string value)
 	{
-		Debug.LogFormat("[Indices Maximus #{0}] {1}", moduleId, value);
+		Debug.LogFormat("[{0} #{1}] {2}", modSelf.ModuleDisplayName, moduleId, value);
 	}
 	void HandleDelta(int delta)
     {
@@ -444,6 +444,11 @@ public class indicesMaximusRewriteScript : MonoBehaviour
                     }
 					yield return new WaitForSeconds(.1f);
 				}
+				if (!firstPressSinceReset && denomVal == curRoot[0] && numerVal == curRoot[1])
+				{
+					numeratorBtn.OnInteract();
+					yield return new WaitForSeconds(.1f);
+				}
 				(numeratorPressed ? numeratorBtn : denominatorBtn).OnInteract();
 				yield return new WaitForSeconds(.1f);
 			}
@@ -483,7 +488,23 @@ public class indicesMaximusRewriteScript : MonoBehaviour
 			yield return null;
 			foreach (var possibleRoot in valuesToSubmit)
 			{
-				Debug.Log(possibleRoot.Reverse().Join("/"));
+				//Debug.Log(possibleRoot.Reverse().Join("/"));
+				while (numerVal != possibleRoot[0])
+				{
+					if (!numeratorPressed || !firstPressSinceReset)
+						numeratorBtn.OnInteract();
+					if (numerVal < possibleRoot[0])
+					{
+						rightBtn.OnInteract();
+						rightBtn.OnInteractEnded();
+					}
+					else
+					{
+						leftBtn.OnInteract();
+						leftBtn.OnInteractEnded();
+					}
+					yield return new WaitForSeconds(.1f);
+				}
 				while (denomVal != possibleRoot[1])
 				{
 					if (numeratorPressed || !firstPressSinceReset)
@@ -500,20 +521,9 @@ public class indicesMaximusRewriteScript : MonoBehaviour
 					}
 					yield return new WaitForSeconds(.1f);
 				}
-				while (numerVal != possibleRoot[0])
-				{
-					if (!numeratorPressed || !firstPressSinceReset)
-						numeratorBtn.OnInteract();
-					if (numerVal < possibleRoot[0])
-					{
-						rightBtn.OnInteract();
-						rightBtn.OnInteractEnded();
-					}
-					else
-					{
-						leftBtn.OnInteract();
-						leftBtn.OnInteractEnded();
-					}
+				if (!firstPressSinceReset && denomVal == possibleRoot[1] && numerVal == possibleRoot[0])
+                {
+					numeratorBtn.OnInteract();
 					yield return new WaitForSeconds(.1f);
 				}
 				(numeratorPressed ? numeratorBtn : denominatorBtn).OnInteract();
