@@ -14,12 +14,12 @@ MonoBehaviour:
   id: indicesMaxmiusMod
   title: Indices Maxmius
   author: Burniel, Chestnut, VFlyer
-  description: "Indices Maxmius\r v1.0.3\n\"Who uses these equations in the first
+  description: "Indices Maxmius\r v1.0.4\n\"Who uses these equations in the first
     place!?\" - someone who blew up and actually tried to use a calculator for this\n\r\nThis
     is a variant of a module by the original creator. You can seek out the original
     version [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2171613368]here.[/url]\nModuleID:
     indicesMaxmiusModule\r\n\r\nVariant by VFlyer\nOriginal Module by Burniel.\nOriginal
     idea by Chestnut.\n\r\nManual (HTML): N/A\nManual (PDF): N/A"
-  version: 1.0.3
+  version: 1.0.4
   outputFolder: build
   previewImage: {fileID: 2800000, guid: 94ecc17682df36b46b6fb42f6e29b5b6, type: 3}

@@ -98,6 +98,10 @@ public class IndicesMaximusRewriteScript : MonoBehaviour
 	{
 		Debug.LogFormat("[{0} #{1}] {2}", modSelf.ModuleDisplayName, moduleId, value);
 	}
+	void QuickLog(string value, params object[] args)
+	{
+		QuickLog(string.Format(value, args));
+	}
 	void HandleDelta(int delta)
     {
 		if (!firstPressSinceReset) return;
@@ -118,12 +122,17 @@ public class IndicesMaximusRewriteScript : MonoBehaviour
 		var intepretedRational = new[] { denomVal, numerVal };
 		if (firstPressSinceReset && isNumeratorBtn == numeratorPressed)
 		{
+			if (GetGCM(denomVal, Math.Abs(numerVal)) != 1 || (numerVal == 0 && denomVal > 1))
+			{// Try to prevent submitting unsimplified values like 6/3 or 0/9
+				mAudio.PlaySoundAtTransform("error", transform);
+				return;
+            }
 			var idxFoundRoot = selectedCorrectRationalRoots.IndexOf(a => intepretedRational.SequenceEqual(a));
 			if (idxFoundRoot != -1)
 			{
 				if (!correctRootsPressed.Contains(idxFoundRoot))
 				{
-					QuickLog(string.Format("The root, {0}, was correctly selected.", QuickConvertRational(intepretedRational)));
+					QuickLog("The root, {0}, was correctly selected.", QuickConvertRational(intepretedRational));
 					if (intepretedRational[0] == 1)
 					{
 						curchkLabel.text = intepretedRational[1].ToString();
@@ -154,7 +163,7 @@ public class IndicesMaximusRewriteScript : MonoBehaviour
 			}
 			else
 			{
-				QuickLog(string.Format("The root, {0}, was incorrectly selected. Starting over...", QuickConvertRational(intepretedRational)));
+				QuickLog("The root, {0}, was incorrectly selected. Starting over...", QuickConvertRational(intepretedRational));
 				modSelf.HandleStrike();
 				StartCoroutine(StrikeRoutine(curchkLabel));
 			}
@@ -217,16 +226,16 @@ public class IndicesMaximusRewriteScript : MonoBehaviour
 			if (selectedCorrectRationalRoots.All(a => a[0] == 1))
 				goto retryRationalGuarentee;
         }
-		QuickLog(string.Format("All distinct roots selected (lowest to highest): {0}",
-			selectedCorrectRationalRoots.OrderBy(a => a[1]).ThenBy(a => a[0]).Select(a => QuickConvertRational(a)).Join()));
+		QuickLog("All distinct roots selected (lowest to highest): {0}",
+			selectedCorrectRationalRoots.OrderBy(a => a[1]).ThenBy(a => a[0]).Select(a => QuickConvertRational(a)).Join());
 		var repeatCount = Enumerable.Repeat(1, 4).ToArray();
 		for (var x = 0; x < 4; x++)
 		{
 			var selectedIdx = Enumerable.Range(0, 4).PickRandom();
 			repeatCount[selectedIdx]++;
 		}
-		QuickLog(string.Format("Each of the following roots will occur this many times in the following equation: {0}", Enumerable.Range(0, 4).OrderBy(a => selectedCorrectRationalRoots.ElementAt(a)[1]).ThenBy(a => selectedCorrectRationalRoots.ElementAt(a)[0])
-			.Select(a => string.Format("[{0}: {1}]", QuickConvertRational(selectedCorrectRationalRoots[a]), repeatCount[a])).Join(", ")));
+		QuickLog("Each of the following roots will occur this many times in the following equation: {0}", Enumerable.Range(0, 4).OrderBy(a => selectedCorrectRationalRoots.ElementAt(a)[1]).ThenBy(a => selectedCorrectRationalRoots.ElementAt(a)[0])
+			.Select(a => string.Format("[{0}: {1}]", QuickConvertRational(selectedCorrectRationalRoots[a]), repeatCount[a])).Join(", "));
 
 		int[] arrayToDisplay = new int[0];
 		for (var x = 0; x < selectedCorrectRationalRoots.Length; x++)
@@ -237,7 +246,7 @@ public class IndicesMaximusRewriteScript : MonoBehaviour
 				arrayToDisplay = PolynomialMultiplication(arrayToDisplay, flippedRoot);
 		}
 		var equationMade = CreateEquationString(arrayToDisplay);
-		QuickLog(string.Format("Generated Equation: {0}", equationMade));
+		QuickLog("Generated Equation: {0}", equationMade);
 		SetEquationText(equationMade);
 		numerTxt.text = numerVal.ToString();
 		denomTxt.text = denomVal.ToString();
@@ -334,9 +343,18 @@ public class IndicesMaximusRewriteScript : MonoBehaviour
 	IEnumerator StrikeRoutine(TextMesh offendingButton)
 	{
 		resetting = true;
-		offendingButton.color = new Color32(255, 0, 0, 255);
+		offendingButton.color = Color.red;
 		var intepretedRational = new[] { denomVal, numerVal };
-		offendingButton.text = QuickConvertRational(intepretedRational);
+		if (intepretedRational[0] == 1)
+		{
+			offendingButton.text = intepretedRational[1].ToString();
+			offendingButton.characterSize = .25f;
+		}
+		else
+		{
+			offendingButton.text = string.Format("{0}     \n/\n    {1}", intepretedRational[1], intepretedRational[0]);
+			offendingButton.characterSize = 0.15f;
+		}
 		yield return new WaitForSeconds(1f);
 		GenerateSolution(stagesCompleted == 0);
 		resetting = false;
@@ -393,9 +411,9 @@ public class IndicesMaximusRewriteScript : MonoBehaviour
 		else
         {
 			timeHeld += Time.deltaTime;
-			if (timeHeld > 1f)
+			if (timeHeld > 0.5f)
             {
-				timeHeld = 0.75f;
+				timeHeld = 0.4f;
 				HandleDelta(deltaBtnHeld);
             }
         }
